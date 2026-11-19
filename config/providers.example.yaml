@@ -1,0 +1,36 @@
+# Copy to providers.local.yaml and edit locally.
+# CLI templates are configurable; validate them against the installed CLI version.
+providers:
+  codex:
+    type: command
+    auth_mode: subscription_cli
+    enabled: true
+    command: ["codex", "exec", "{prompt}"]
+    model: null
+    timeout_seconds: 900
+
+  claude:
+    type: command
+    auth_mode: subscription_cli
+    enabled: true
+    command: ["claude", "-p", "{prompt}"]
+    model: null
+    timeout_seconds: 900
+
+  gemini:
+    type: command
+    auth_mode: subscription_cli
+    enabled: true
+    command: ["gemini", "-p", "{prompt}"]
+    model: null
+    timeout_seconds: 900
+
+  deepseek:
+    type: openai_compatible_api
+    auth_mode: api
+    enabled: true
+    base_url: https://api.deepseek.com
+    api_key_env: DEEPSEEK_API_KEY
+    model_env: DEEPSEEK_MODEL
+    model: deepseek-chat
+    timeout_seconds: 180
