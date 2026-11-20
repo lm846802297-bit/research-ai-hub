@@ -85,6 +85,18 @@ Print provider/model/usage metadata as JSON:
 
     research-ai-hub run --task independent_cross_check --prompt "Check the calculation" --json
 
+## Testing
+
+Run the test suite in the active Python environment:
+
+    python -m pytest -q
+
+Run the complete Python 3.11 / 3.12 / 3.13 matrix locally on Windows with uv:
+
+    .\scripts\test-python-matrix.ps1
+
+The script uses isolated environments and does not rely on GitHub-hosted runner minutes. See [CI troubleshooting](docs/CI_TROUBLESHOOTING.md) for pre-runner failures and billing checks.
+
 ## Configuration
 
 - config/providers.example.yaml: provider definitions, authentication modes, CLI commands, API base URLs, and environment-variable names.
@@ -114,6 +126,7 @@ The next layers—parallel multi-agent runs, independent disagreement reports, r
 
     config/                 Example provider and routing configuration
     docs/                   Architecture and provider-authentication notes
+    scripts/                Local validation scripts
     src/research_ai_hub/    Orchestrator package, router, CLI, and provider adapters
     tests/                  Unit and integration-mock tests
     .github/workflows/      Continuous integration
