@@ -2,10 +2,27 @@
 
 from __future__ import annotations
 
+import re
 import subprocess
 from collections.abc import Sequence
 
 from .base import CompletionRequest, CompletionResponse
+
+
+def _redact_diagnostic(value: str) -> str:
+    """Remove common credential forms before surfacing CLI diagnostics."""
+    value = re.sub(
+        r"(?i)(authorization\s*:\s*bearer\s+)[^\s]+",
+        r"\1[REDACTED]",
+        value,
+    )
+    value = re.sub(
+        r"(?i)((?:api[_ -]?key|token|secret)\s*[=:]\s*)[^\s,;]+",
+        r"\1[REDACTED]",
+        value,
+    )
+    value = re.sub(r"\b(?:sk|ds)-[A-Za-z0-9_-]{12,}\b", "[REDACTED]", value)
+    return value
 
 
 class CommandProvider:
@@ -26,6 +43,8 @@ class CommandProvider:
     ) -> None:
         if not command:
             raise ValueError("command must contain at least one argument")
+        if not all(isinstance(part, str) for part in command):
+            raise ValueError("command arguments must all be strings")
         if not any("{prompt}" in part for part in command):
             raise ValueError("command must contain a {prompt} placeholder")
         self.name = name
@@ -62,9 +81,10 @@ class CommandProvider:
             shell=False,
         )
         if result.returncode != 0:
-            stderr = result.stderr.strip()[-4000:]
+            stderr = _redact_diagnostic(result.stderr.strip()[-4000:])
+            diagnostic = f" Diagnostic: {stderr}" if stderr else ""
             raise RuntimeError(
-                f"Provider '{self.name}' exited with code {result.returncode}: {stderr}"
+                f"Provider '{self.name}' exited with code {result.returncode}.{diagnostic}"
             )
 
         return CompletionResponse(

@@ -1,5 +1,5 @@
 # Copy to providers.local.yaml and edit locally.
-# CLI templates are configurable; validate them against the installed CLI version.
+# CLI command templates use official non-interactive modes.
 providers:
   codex:
     type: command
@@ -32,5 +32,5 @@ providers:
     base_url: https://api.deepseek.com
     api_key_env: DEEPSEEK_API_KEY
     model_env: DEEPSEEK_MODEL
-    model: deepseek-chat
+    model: deepseek-v4-pro
     timeout_seconds: 180

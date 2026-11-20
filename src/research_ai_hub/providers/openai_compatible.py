@@ -82,7 +82,7 @@ class OpenAICompatibleProvider:
             raise RuntimeError(f"Provider '{self.name}' returned no completion choices")
 
         message = choices[0].get("message") or {}
-        content = message.get("content", "")
+        content = message.get("content") or ""
         if not isinstance(content, str):
             content = str(content)
 

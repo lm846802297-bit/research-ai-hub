@@ -1,29 +1,30 @@
 # Provider authentication and access modes
 
-Research AI Hub supports two co-equal technical access modes, with a subscription-first preference where the provider offers an official CLI suitable for the user's plan.
+Research AI Hub supports both subscription-backed official CLI authentication and direct API access. Subscription CLI is the preferred path when the provider offers a CLI compatible with the user's plan. API access remains a first-class, enabled route.
 
 ## Subscription-backed official CLI
 
-| Provider | Local command entry | Login ownership |
+| Provider | Non-interactive command | Login ownership |
 |---|---|---|
-| Codex | configurable command template | Codex CLI |
-| Claude Code | configurable command template | Claude Code |
-| Gemini CLI | configurable command template | Gemini CLI |
+| Codex | codex exec <prompt> | Codex CLI |
+| Claude Code | claude -p <prompt> | Claude Code |
+| Gemini CLI | gemini -p <prompt> | Gemini CLI |
 
-The application launches the configured executable. The user signs in through that tool's official login flow. This avoids requiring a separate API key when subscription access is supported.
+The application launches the configured executable. The user signs in through the provider's official login flow. For Codex, codex login supports ChatGPT OAuth and codex login status reports the active authentication method.
 
-Command syntax is intentionally configurable. CLI flags and subscription entitlements can change; confirm the installed version's official documentation before activating a template. The application must not imitate browser logins or extract session cookies.
+Command syntax is configurable in config/providers.example.yaml. The templates in this repository use the providers' documented print/exec modes. The provider's own CLI controls authentication, permissions, and model availability.
 
 ## Direct API access
 
-API support is retained as a first-class capability. DeepSeek is included in the starter configuration.
+API support is retained as a first-class capability. DeepSeek is included and enabled in the example configuration.
 
-| Provider | Access mode | Environment variable |
-|---|---|---|
-| DeepSeek | OpenAI-compatible Chat Completions | DEEPSEEK_API_KEY |
-| Generic compatible endpoint | OpenAI-compatible Chat Completions | configurable |
+| Provider | API endpoint | Environment variable | Default model |
+|---|---|---|---|
+| DeepSeek | https://api.deepseek.com/chat/completions | DEEPSEEK_API_KEY | deepseek-v4-pro |
 
-The API adapter reads credentials only at request time. Put keys in environment variables or a local secret manager, never in committed configuration.
+Set DEEPSEEK_MODEL=deepseek-flash to select the flash model, or pass --model for a one-request override. The adapter reads the key from the environment at request time and never writes it to configuration or response metadata.
+
+DeepSeek's official Chat Completions endpoint accepts the standard messages array and bearer-key authentication. See the [official API reference](https://api-docs.deepseek.com/api/create-chat-completion/).
 
 ## Selection policy
 
@@ -31,8 +32,8 @@ The API adapter reads credentials only at request time. Put keys in environment 
 2. Prefer subscription CLI for providers configured that way.
 3. Keep API providers available for tasks that require them or when explicitly selected.
 4. Do not silently switch from a failed subscription request to a paid API request.
-5. Log the selected access mode and provider/model identifiers, but never log authorization headers or secrets.
+5. Log provider/model identifiers and usage metadata, but never log authorization headers or secrets.
 
 ## Cost and quota controls
 
-The initial default is fallback_policy: manual_only. A future automatic fallback feature must require an explicit opt-in, a named fallback provider, and a configured spending ceiling.
+The initial default is fallback_policy: manual_only. The router rejects automatic fallback policies until an explicit budget ceiling and user opt-in are implemented.

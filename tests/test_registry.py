@@ -19,6 +19,7 @@ def test_example_configuration_keeps_subscription_and_api_modes():
     assert definitions["gemini"]["auth_mode"] == "subscription_cli"
     assert definitions["deepseek"]["auth_mode"] == "api"
     assert definitions["deepseek"]["enabled"] is True
+    assert definitions["deepseek"]["model"] == "deepseek-v4-pro"
 
 
 def test_registry_builds_deepseek_without_reading_secret():
@@ -48,4 +49,34 @@ def test_invalid_auth_mode_is_rejected():
         }
     }
     with pytest.raises(ValueError, match="must use api auth"):
+        validate_provider_definitions(config)
+
+
+def test_api_provider_rejects_invalid_base_url():
+    config = {
+        "providers": {
+            "broken": {
+                "type": "openai_compatible_api",
+                "auth_mode": "api",
+                "base_url": "not-a-url",
+                "api_key_env": "EXAMPLE_KEY",
+                "model": "example-model",
+            }
+        }
+    }
+    with pytest.raises(ValueError, match="absolute HTTP"):
+        validate_provider_definitions(config)
+
+
+def test_command_provider_requires_prompt_placeholder():
+    config = {
+        "providers": {
+            "broken": {
+                "type": "command",
+                "auth_mode": "subscription_cli",
+                "command": ["some-cli", "--json"],
+            }
+        }
+    }
+    with pytest.raises(ValueError, match="prompt"):
         validate_provider_definitions(config)
