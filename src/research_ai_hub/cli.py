@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 from typing import Sequence
 
+from dotenv import load_dotenv
+
 from .config import load_yaml, validate_provider_definitions
 from .providers import CompletionRequest
 from .router import TaskRouter
@@ -46,6 +48,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    load_dotenv(Path.cwd() / ".env", override=False)
     args = _parser().parse_args(argv)
 
     if args.command == "providers":

@@ -31,3 +31,15 @@ def test_cli_error_diagnostics_redact_common_credentials():
     assert "abc123" not in redacted
     assert "sk-abcdefghijklmnop" not in redacted
     assert "ds-abcdefghijklmnop" not in redacted
+
+
+def test_command_provider_adds_model_flag_only_when_requested():
+    provider = CommandProvider(
+        "codex", ["codex", "exec", "{model_arg}", "{prompt}"]
+    )
+    default_command = provider.build_command(CompletionRequest(prompt="hello"))
+    selected_command = provider.build_command(
+        CompletionRequest(prompt="hello", model="gpt-example")
+    )
+    assert default_command == ["codex", "exec", "hello"]
+    assert selected_command == ["codex", "exec", "--model", "gpt-example", "hello"]

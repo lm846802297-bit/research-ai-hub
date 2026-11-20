@@ -26,7 +26,7 @@ The project supports BOTH subscription-authenticated official CLIs and direct AP
 | DeepSeek | api | DEEPSEEK_API_KEY |
 | Other compatible APIs | api | Provider-specific environment variable |
 
-The example command templates use the documented non-interactive modes: codex exec, claude -p, and gemini -p. See the [Codex CLI reference](https://learn.chatgpt.com/docs/cli/reference), [Claude Code CLI reference](https://docs.anthropic.com/en/docs/claude-code/cli-usage), and [Gemini CLI configuration reference](https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md).
+The example command templates use the documented non-interactive modes: codex exec, claude -p, and gemini -p. See the [Codex CLI reference](https://learn.chatgpt.com/docs/cli/reference), [Claude Code CLI reference](https://docs.anthropic.com/en/docs/claude-code/cli-usage), and [Gemini CLI reference](https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/cli-reference.md).
 
 ## Quick start
 
@@ -51,7 +51,7 @@ Copy the example configuration:
 
 Sign in with the official CLI tools you want to use. For Codex, codex login supports ChatGPT sign-in; check the active method with codex login status.
 
-For DeepSeek API, set the key in your shell or local secret manager. The default model is deepseek-v4-pro; set DEEPSEEK_MODEL=deepseek-flash when you prefer the flash model. The model can also be overridden per request.
+For DeepSeek API, set the key in your local .env file or shell. The default model is deepseek-v4-pro; set DEEPSEEK_MODEL=deepseek-flash when you prefer the flash model. The model can also be overridden per request.
 
 Windows PowerShell:
 
@@ -62,6 +62,8 @@ macOS/Linux:
 
     export DEEPSEEK_API_KEY="your-key"
     export DEEPSEEK_MODEL="deepseek-v4-pro"
+
+The CLI loads a .env file from the current working directory automatically.
 
 List providers and their access modes:
 
@@ -74,6 +76,10 @@ Run a task through its configured route:
 Choose a provider explicitly for one request:
 
     research-ai-hub run --task literature_survey --provider deepseek --prompt "Compare these papers ..."
+
+Select a model for one request:
+
+    research-ai-hub run --task independent_cross_check --provider codex --model gpt-model-name --prompt "Check this calculation"
 
 Print provider/model/usage metadata as JSON:
 
@@ -99,6 +105,7 @@ The default fallback_policy is manual_only. If a subscription CLI fails, the err
 - YAML provider validation and provider registry.
 - Task router with explicit task routes and manual provider override.
 - CLI for listing providers and running routed tasks.
+- .env loading, per-request model selection, and secret-redacted CLI diagnostics.
 - Unit tests for configuration, routing, command invocation, and mocked API requests.
 
 The next layers—parallel multi-agent runs, independent disagreement reports, research memory, citation auditing, and scientific-computation adapters—will be added separately and validated with dedicated tests.

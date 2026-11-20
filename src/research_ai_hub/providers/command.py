@@ -28,9 +28,9 @@ def _redact_diagnostic(value: str) -> str:
 class CommandProvider:
     """Run a configured CLI command without invoking a shell.
 
-    The command is an argument sequence. The literal placeholders
-    {prompt} and {model} are substituted per request. Authentication
-    remains owned by the official CLI's own login mechanism.
+    {prompt} and {model} are string substitutions. {model_arg} expands to
+    the two arguments --model and the selected model, or disappears when
+    no model is selected. Authentication remains owned by the official CLI.
     """
 
     def __init__(
@@ -53,11 +53,19 @@ class CommandProvider:
         self.timeout_seconds = timeout_seconds
 
     def build_command(self, request: CompletionRequest) -> list[str]:
-        selected_model = request.model or self.model or ""
-        return [
-            part.replace("{prompt}", request.prompt).replace("{model}", selected_model)
-            for part in self.command
-        ]
+        selected_model = request.model or self.model
+        result: list[str] = []
+        for part in self.command:
+            if part == "{model_arg}":
+                if selected_model:
+                    result.extend(["--model", selected_model])
+                continue
+            result.append(
+                part.replace("{prompt}", request.prompt).replace(
+                    "{model}", selected_model or ""
+                )
+            )
+        return result
 
     def complete(self, request: CompletionRequest) -> CompletionResponse:
         if request.system_prompt:

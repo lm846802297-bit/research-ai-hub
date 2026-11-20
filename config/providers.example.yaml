@@ -1,11 +1,12 @@
 # Copy to providers.local.yaml and edit locally.
 # CLI command templates use official non-interactive modes.
+# {model_arg} expands to --model <value> only when a model is selected.
 providers:
   codex:
     type: command
     auth_mode: subscription_cli
     enabled: true
-    command: ["codex", "exec", "{prompt}"]
+    command: ["codex", "exec", "{model_arg}", "{prompt}"]
     model: null
     timeout_seconds: 900
 
@@ -13,7 +14,7 @@ providers:
     type: command
     auth_mode: subscription_cli
     enabled: true
-    command: ["claude", "-p", "{prompt}"]
+    command: ["claude", "-p", "{model_arg}", "{prompt}"]
     model: null
     timeout_seconds: 900
 
@@ -21,7 +22,7 @@ providers:
     type: command
     auth_mode: subscription_cli
     enabled: true
-    command: ["gemini", "-p", "{prompt}"]
+    command: ["gemini", "-p", "{model_arg}", "{prompt}"]
     model: null
     timeout_seconds: 900
 
