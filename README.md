@@ -1,5 +1,7 @@
 # Research AI Hub
 
+- Mandatory research compute architecture and reproducibility policy: [RESEARCH_COMPUTE_POLICY.md](RESEARCH_COMPUTE_POLICY.md)
+
 **Subscription-first, API-supported multi-model research orchestration.**
 
 Research AI Hub is a local-first workspace for routing research tasks to multiple model providers, collecting their outputs, comparing independent analyses, and preserving reproducible research records.
