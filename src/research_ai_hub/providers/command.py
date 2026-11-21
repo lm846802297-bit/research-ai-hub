@@ -1,0 +1,103 @@
+"""Adapter for official, locally authenticated command-line clients."""
+
+from __future__ import annotations
+
+import re
+import subprocess
+from collections.abc import Sequence
+
+from .base import CompletionRequest, CompletionResponse
+
+
+def _redact_diagnostic(value: str) -> str:
+    """Remove common credential forms before surfacing CLI diagnostics."""
+    value = re.sub(
+        r"(?i)(authorization\s*:\s*bearer\s+)[^\s]+",
+        r"\1[REDACTED]",
+        value,
+    )
+    value = re.sub(
+        r"(?i)((?:api[_ -]?key|token|secret)\s*[=:]\s*)[^\s,;]+",
+        r"\1[REDACTED]",
+        value,
+    )
+    value = re.sub(r"\b(?:sk|ds)-[A-Za-z0-9_-]{12,}\b", "[REDACTED]", value)
+    return value
+
+
+class CommandProvider:
+    """Run a configured CLI command without invoking a shell.
+
+    {prompt} and {model} are string substitutions. {model_arg} expands to
+    the two arguments --model and the selected model, or disappears when
+    no model is selected. Authentication remains owned by the official CLI.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        command: Sequence[str],
+        *,
+        model: str | None = None,
+        timeout_seconds: int = 900,
+    ) -> None:
+        if not command:
+            raise ValueError("command must contain at least one argument")
+        if not all(isinstance(part, str) for part in command):
+            raise ValueError("command arguments must all be strings")
+        if not any("{prompt}" in part for part in command):
+            raise ValueError("command must contain a {prompt} placeholder")
+        self.name = name
+        self.command = tuple(command)
+        self.model = model
+        self.timeout_seconds = timeout_seconds
+
+    def build_command(self, request: CompletionRequest) -> list[str]:
+        selected_model = request.model or self.model
+        result: list[str] = []
+        for part in self.command:
+            if part == "{model_arg}":
+                if selected_model:
+                    result.extend(["--model", selected_model])
+                continue
+            result.append(
+                part.replace("{prompt}", request.prompt).replace(
+                    "{model}", selected_model or ""
+                )
+            )
+        return result
+
+    def complete(self, request: CompletionRequest) -> CompletionResponse:
+        if request.system_prompt:
+            prompt = f"{request.system_prompt}\n\n{request.prompt}"
+            request = CompletionRequest(
+                prompt=prompt,
+                model=request.model,
+                temperature=request.temperature,
+                max_tokens=request.max_tokens,
+                metadata=request.metadata,
+            )
+
+        result = subprocess.run(
+            self.build_command(request),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=self.timeout_seconds,
+            check=False,
+            shell=False,
+        )
+        if result.returncode != 0:
+            stderr = _redact_diagnostic(result.stderr.strip()[-4000:])
+            diagnostic = f" Diagnostic: {stderr}" if stderr else ""
+            raise RuntimeError(
+                f"Provider '{self.name}' exited with code {result.returncode}.{diagnostic}"
+            )
+
+        return CompletionResponse(
+            provider=self.name,
+            model=request.model or self.model or "cli-default",
+            content=result.stdout.strip(),
+            raw=result.stdout,
+        )

@@ -1,0 +1,37 @@
+# Copy to providers.local.yaml and edit locally.
+# CLI command templates use official non-interactive modes.
+# {model_arg} expands to --model <value> only when a model is selected.
+providers:
+  codex:
+    type: command
+    auth_mode: subscription_cli
+    enabled: true
+    command: ["codex", "exec", "{model_arg}", "{prompt}"]
+    model: null
+    timeout_seconds: 900
+
+  claude:
+    type: command
+    auth_mode: subscription_cli
+    enabled: true
+    command: ["claude", "-p", "{model_arg}", "{prompt}"]
+    model: null
+    timeout_seconds: 900
+
+  gemini:
+    type: command
+    auth_mode: subscription_cli
+    enabled: true
+    command: ["gemini", "-p", "{model_arg}", "{prompt}"]
+    model: null
+    timeout_seconds: 900
+
+  deepseek:
+    type: openai_compatible_api
+    auth_mode: api
+    enabled: true
+    base_url: https://api.deepseek.com
+    api_key_env: DEEPSEEK_API_KEY
+    model_env: DEEPSEEK_MODEL
+    model: deepseek-v4-pro
+    timeout_seconds: 180

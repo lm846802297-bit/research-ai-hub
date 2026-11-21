@@ -1,0 +1,16 @@
+# Copy to routes.local.yaml and adapt to your research workflow.
+# A failed subscription call must not trigger a billable API call implicitly.
+routing:
+  fallback_policy: manual_only
+  default_provider: codex
+  task_routes:
+    literature_survey: claude
+    independent_cross_check: deepseek
+    code_review: codex
+    numerical_interpretation: gemini
+
+execution:
+  max_parallel_providers: 3
+  preserve_raw_outputs: true
+  record_provider_metadata: true
+  redact_secrets_from_logs: true
